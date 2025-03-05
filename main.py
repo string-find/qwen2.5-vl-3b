@@ -22,13 +22,19 @@ def get_model():
     if _hf_model is None:
         logger.info("Loading Moondream model from Hugging Face for the first time...")
         try:
+            # Check if CUDA is available
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            logger.info(f"Using device: {device}")
+            
+            # Load the model without device_map
             _hf_model = AutoModelForCausalLM.from_pretrained(
                 "vikhyatk/moondream2",
                 revision="2025-01-09",
-                trust_remote_code=True,
-                # Uncomment to run on GPU if available
-                device_map="auto" if torch.cuda.is_available() else None
+                trust_remote_code=True
             )
+            
+            # Move model to the appropriate device
+            _hf_model = _hf_model.to(device)
             logger.info("Moondream model loaded successfully from Hugging Face")
         except Exception as e:
             logger.error(f"Error loading Moondream model: {e}")
@@ -80,9 +86,19 @@ def moondream_caption(image_url: str = Query(...)):
         logger.info("Encoding image...")
         encoded_image = model.encode_image(image)
         
-        # Generate caption
+        # Generate caption - try different method names
         logger.info("Generating caption...")
-        caption = model.generate_caption(encoded_image)
+        try:
+            # First try generate_caption
+            caption = model.generate_caption(encoded_image)
+        except AttributeError:
+            # Fall back to caption method
+            try:
+                caption = model.caption(encoded_image)
+            except AttributeError:
+                # As a last resort, try general query with a caption prompt
+                caption = model.query(encoded_image, "Describe this image briefly.")
+                
         logger.info(f"Caption generated: {caption}")
         
         return {"caption": caption}
@@ -126,72 +142,5 @@ def moondream_query(image_url: str = Query(...), question: str = Query(...)):
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error answering query: {str(e)}")
 
-@app.get("/moondream/detect")
-def moondream_detect(image_url: str = Query(...), object_name: str = Query(...)):
-    """
-    Detect objects in an image using Moondream.
-    
-    Parameters:
-    - image_url: URL of the image to analyze
-    - object_name: Object to detect in the image
-    """
-    try:
-        logger.info(f"Detect request received for image: {image_url}, object: {object_name}")
-        # Load the model
-        model = get_model()
-        
-        # Load and process the image
-        image = load_image_from_url(image_url)
-        
-        # Encode the image
-        encoded_image = model.encode_image(image)
-        
-        # Detect objects
-        detection_result = model.detect(encoded_image, object_name)
-        logger.info(f"Objects detected: {detection_result}")
-        
-        return {"objects": detection_result}
-    except HTTPException as e:
-        raise e
-    except AttributeError:
-        logger.error("Detect function not available in Hugging Face model implementation")
-        raise HTTPException(status_code=501, detail="Detection functionality not implemented in the Hugging Face model version")
-    except Exception as e:
-        logger.error(f"Error in detect endpoint: {e}")
-        logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error detecting objects: {str(e)}")
-
-@app.get("/moondream/point")
-def moondream_point(image_url: str = Query(...), object_name: str = Query(...)):
-    """
-    Point at objects in an image using Moondream.
-    
-    Parameters:
-    - image_url: URL of the image to analyze
-    - object_name: Object to point at in the image
-    """
-    try:
-        logger.info(f"Point request received for image: {image_url}, object: {object_name}")
-        # Load the model
-        model = get_model()
-        
-        # Load and process the image
-        image = load_image_from_url(image_url)
-        
-        # Encode the image
-        encoded_image = model.encode_image(image)
-        
-        # Point at objects
-        point_result = model.point(encoded_image, object_name)
-        logger.info(f"Points found: {point_result}")
-        
-        return {"points": point_result}
-    except HTTPException as e:
-        raise e
-    except AttributeError:
-        logger.error("Point function not available in Hugging Face model implementation")
-        raise HTTPException(status_code=501, detail="Point functionality not implemented in the Hugging Face model version")
-    except Exception as e:
-        logger.error(f"Error in point endpoint: {e}")
-        logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error pointing at objects: {str(e)}")
+# The detect and point endpoints are removed as they're likely not supported
+# by the Hugging Face implementation
