@@ -3,6 +3,7 @@ torchvision
 fastapi
 uvicorn
 matplotlib
-moondream
+transformers
+einops
 requests
 Pillow
