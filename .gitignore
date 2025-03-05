@@ -4929,3 +4929,5 @@ venv/lib/python3.11/site-packages/urllib3/util/wait.py
 venv/pyvenv.cfg
 venv/share/man/man1/ttx.1
 output_with_boxes.jpg
+test-moondream.py
+qwen.py

@@ -1,8 +1,5 @@
 torch
 torchvision
-git+https://github.com/huggingface/transformers
-accelerate
-qwen-vl-utils
 fastapi
 uvicorn
 matplotlib
