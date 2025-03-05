@@ -5,7 +5,7 @@ import torch
 
 app = FastAPI()
 
-checkpoint = "Qwen/Qwen2.5-VL-3B-Instruct"
+checkpoint = "Qwen/Qwen2.5-VL-7B-Instruct"
 min_pixels = 256*28*28
 max_pixels = 1280*28*28
 processor = AutoProcessor.from_pretrained(
@@ -27,7 +27,7 @@ def read_root():
 @app.get("/predict")
 def predict(image_url: str = Query(...), prompt: str = Query(...)):
     messages = [
-        {"role": "system", "content": "You are a helpful assistant with vision abilities."},
+        {"role": "system", "content": ""},
         {"role": "user", "content": [{"type": "image", "image": image_url}, {"type": "text", "text": prompt}]},
     ]
     text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)

@@ -1,0 +1,8 @@
+torch
+w
+git+https://github.com/huggingface/transformers
+accelerate
+qwen-vl-utils
+fastapi
+uvicorn
+matplotlib
