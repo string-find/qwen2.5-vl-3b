@@ -17,8 +17,6 @@ from groundingdino.util.vl_utils import create_positive_map_from_span
 
 app = FastAPI(title="Grounding DINO API")
 
-model = None
-
 class ImageRequest(BaseModel):
     image_url: str
     text_prompt: str
@@ -81,12 +79,6 @@ def get_grounding_output(model, image, caption, box_threshold, text_threshold, c
         pred_phrases.append(pred_phrase + f"({str(logit.max().item())[:4]})")
 
     return boxes_filt, pred_phrases
-
-@app.on_event("startup")
-async def startup_event():
-    global model
-    model = load_model(CONFIG_PATH, CHECKPOINT_PATH)
-    print("Model loaded successfully")
 
 @app.post("/predict")
 async def predict(request: ImageRequest):
