@@ -17,6 +17,11 @@ from groundingdino.util.vl_utils import create_positive_map_from_span
 
 app = FastAPI(title="Grounding DINO API")
 
+config_file = "groundingdino/config/GroundingDINO_SwinT_OGC.py"
+checkpoint_path = "weights/groundingdino_swint_ogc.pth"
+
+model = load_model(config_file, checkpoint_path, cpu_only=args.cpu_only)
+
 class ImageRequest(BaseModel):
     image_url: str
     text_prompt: str
