@@ -20,7 +20,6 @@ app = FastAPI(title="Grounding DINO API")
 config_file = "groundingdino/config/GroundingDINO_SwinT_OGC.py"
 checkpoint_path = "weights/groundingdino_swint_ogc.pth"
 
-# Global variable for the model
 model = None
 
 def load_model(model_config_path, model_checkpoint_path, cpu_only=False):
